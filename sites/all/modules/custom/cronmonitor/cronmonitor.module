@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * Implementiong hook_permission
+ */
+function cronmonitor_permission() {
+    return array(
+        'administor cronmonitor' => array(
+            'title' => t('Administer Cron Monitor'),
+            'description' => t('Perform administration tasks for Cron Monitor.'),
+        ),
+    );
+}
+
+/**
+ * Implementing hook menu
+ */
+function cronmonitor_menu() {
+    $items = array();
+
+    $items['admin/config/cronmonitor'] = array(
+        'title' => 'Cron Monitor settings',
+        // Page callback, etc. need to be added here.
+        'page callback' => 'drupal_get_form',
+        //Passing form id as an argument
+        'page arguments' => array('cronmonitor_admin_form'),
+        'access arguments' => array('administor cronmonitor'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+    return $items;
+}
+
+/**
+ * Implementing form for Corn Monitor
+ */
+function cronmonitor_admin_form($form, &$form_state) {
+
+    $form['cronmonitor_enable'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Enable Cron Monitor.'),
+        '#default_value' => variable_get('cronmonitor_enable', 0),
+    );
+
+    $form['cronmonitor_email_text'] = array(
+        '#title' => t('Text to send with cronmonitor email'),
+        '#type' => 'textarea',
+        '#description' => t('Enter some text to be send with cron monitor email message.'),
+        '#default_value' => variable_get('cronmonitor_email_text', ''),
+    );
+
+    return system_settings_form($form);
+}
+
+
+/**
+ * Implementing hook cron
+ */
+function cronmonitor_cron() {
+  if (variable_get('cronmonitor_enable', 0)) {
+      //send an email
+      drupal_mail('cronmonitor', 'cronmonitor_email', 'salim@yopmail.com', language_default());
+  }
+}
+
+/**
+ * Implementing hook mail
+ */
+function cronmonitor_mail($key, &$message, $params) {
+  switch($key) {
+      case 'cronmonitor_email':
+        $message['subject'] = t('This is a cron monitor report');
+        $message['body'][] = t('This is a cron monitor report on @site-name',
+                                array('@site-name' => variable_get('site_name', 'dev.drupal7.com'))
+                                );
+        $message['body'][] = t(variable_get('cronmonitor_email_text', ''));
+        break;
+  }
+}
