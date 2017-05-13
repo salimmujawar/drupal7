@@ -1,18 +1,34 @@
 <?php
+
 function myrender_array_menu() {
-  $items['mypage-html'] = array(
-    'title' => 'My page with HTML-style function',
-    'page callback' => 'myrender_array_html_page',
-    'access callback' => TRUE,
-  );
+    $items['mypage-html'] = array(
+        'title' => 'My page with HTML-style function',
+        'page callback' => 'myrender_array_html_page',
+        'access callback' => TRUE,
+    );
 
-  $items['mypage-renderable'] = array(
-    'title' => 'My page with render array function',
-    'page callback' => 'myrender_array_renderable_page',
-    'access callback' => TRUE,
-  );
+    $items['mypage-renderable'] = array(
+        'title' => 'My page with render array function',
+        'page callback' => 'myrender_array_renderable_page',
+        'access callback' => TRUE,
+    );
 
-  return $items;
+    return $items;
+}
+
+/**
+ * Implementing hook theme
+ */
+function myrender_array_theme($existing, $type, $theme, $path) {
+    return array(
+        'myrender_array_function' => array(
+            'variables' => array('text_one' => NULL, 'text_two' => NULL),
+        ),
+        'myrender_array_template' => array(
+            'variables' => array('text_one' => NULL, 'text_two' => NULL),
+            'template' => 'myrender_array_template'
+        ),
+    );
 }
 
 /**
@@ -21,9 +37,8 @@ function myrender_array_menu() {
  */
 // Previous method (still works) of generating a page by returning HTML
 function myrender_array_html_page() {
-  $output = '<p>A paragraph about some stuff…</p>';
-  $output .= '<ul><li>first item</li><li>second item</li><li>third item</li></ul>';
-  return $output;
+    $text_one = "This is text one";
+    return theme('myrender_array_function', array('text_one' => $text_one, 'text_two' => t('Text Two!')));
 }
 
 /**
@@ -32,15 +47,22 @@ function myrender_array_html_page() {
  */
 // New method of generating the render array and returning that.
 function myrender_array_renderable_page() {
-  $output = array(
-    'first_para' => array(
-      '#type' => 'markup',
-      '#markup' => '<p>A paragraph about some stuff…</p>',
-    ),
-    'second_para' => array(
-      '#items' => array('first item', 'second item', 'third item'),
-      '#theme' => 'item_list',
-    ),
-  );
-  return $output;
+    $text_one = "This is text one";
+    $output = array(
+        '#theme' => 'myrender_array_template',
+        '#type' => 'markup',
+        '#text_one' => $text_one,
+        '#text_two' => 'Text two',
+    );
+    return $output;
+}
+
+/**
+ * Implementing theme function
+ */
+function theme_myrender_array_function($variables) {
+    $output = "<h2>" . $variables['text_one'] . "</h2>";
+    $output .= "<p>" . $variables['text_two'] . "</p>";
+
+    return $output;
 }
