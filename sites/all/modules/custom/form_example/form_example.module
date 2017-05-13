@@ -9,6 +9,10 @@ function form_example_permission() {
             'title' => t('Submit form_example'),
             'description' => t('Submit the form_example form.'),
         ),
+        'access form_example submissions' => array(
+            'title' => t('Access form_example submissions'),
+            'description' => t('Access the form_example submissions.'),
+        ),
     );
 }
 
@@ -27,6 +31,15 @@ function form_example_menu() {
         'access arguments' => array('submit form_example'),
         'type' => MENU_NORMAL_ITEM,
     );
+    
+    $items['form-submissions'] = array(
+        'title' => 'My Form submissions',        
+        //Passing form id as an argument
+        'page callback' => 'form_example_submissions',
+        'access arguments' => array('access form_example submissions'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+    
     return $items;
 }
 
@@ -90,4 +103,35 @@ function form_example_form_submit($form, &$form_state) {
         ))
         ->execute();
     drupal_set_message(t('Your form entry has been saved.'));
+}
+
+
+/**
+ * View the form submissions
+ */
+function form_example_submissions() {
+    //$results = db_query("SELECT * FROM {form_example}");
+    
+    $query = db_select('form_example', 'fe');
+    $query
+            ->fields('fe', array('fe_id', 'mynumber', 'mytextfield', 'mytext'))
+            ->range(0, 50)
+            ->orderBy('fe.fe_id');
+    
+    $results = $query->execute();
+    
+    $header = array(t('ID'), t('My Number'), t('My Textfield'), t('My Text'));
+    $rows = array();
+    
+    foreach($results as $result) {
+        $rows[] = array(
+                    check_plain($result->fe_id), 
+                    check_plain($result->mynumber), 
+                    check_plain($result->mytextfield), 
+                    check_markup($result->mytext)
+                );        
+    }
+    
+    return theme('table', array('header' => $header, 'rows' => $rows));
+    
 }
