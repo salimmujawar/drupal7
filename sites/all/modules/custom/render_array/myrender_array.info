@@ -1,0 +1,5 @@
+name = "My Render Array Example"
+description = "An example with render array"
+core = "7.x"
+version = "7.x.0.1"
+package = "custom"
